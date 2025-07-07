@@ -1,0 +1,13 @@
+<h2>Informações</h2>
+<table class="device-info-table">
+  <tbody>
+    <tr><th>Hostname</th><td>{{ device.hostname }}</td></tr>
+    <tr><th>IP</th><td>{{ device.ip }}</td></tr>
+    <tr><th>Tipo</th><td>{{ device.type }}</td></tr>
+    <tr><th>Site</th><td>{{ device.site }}</td></tr>
+    <tr><th>Ping Intervalo</th><td>{{ device.interval }} seg</td></tr>
+    <tr><th>Ping Timeout</th><td>{{ device.timeout }} ms</td></tr>
+    <tr><th>Status</th><td>{{ ['ATIVO', 'INATIVO', 'DESCONHECIDO'][device.status] }}</td></tr>
+    <tr><th>Última alteração de status</th><td>{{ device.last_change }}</td></tr>
+  </tbody>
+</table>

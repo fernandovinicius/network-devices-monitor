@@ -1,0 +1,11 @@
+Criar um arquivo .env com as variáveis:
+
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASS=
+DB_NAME=

@@ -1,0 +1,46 @@
+/* === Reset básico === */
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* === Container Principal === */
+.main-container {
+    padding: 25px 50px 50px 50px;
+    width: 80%;
+    max-width: 1560px;
+    margin: 0 auto;
+}
+
+/* === Títulos === */
+h1,
+h2,
+h3 {
+    color: #003366;
+    margin-top: 0;
+}
+
+.monitor-page-title {
+    margin-bottom: 50px;
+}
+
+.monitor-page-title h1 {
+    text-align: center;
+    margin-bottom: 1px;
+}
+
+.monitor-page-title p {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+/* === Contador de atualização === */
+#update-timestamp {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #005ca9;
+}

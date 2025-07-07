@@ -1,0 +1,105 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f5f5;
+    color: #003366;
+}
+
+.navbar {
+    width: 100%;
+    background-color: #003366;
+    color: white;
+    padding: 0;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-content {
+    width: 80%;
+    max-width: 1560px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-btn {
+    background-color: #005aa5;
+    color: white;
+    border: none;
+    width: 120px;
+    height: 40px;
+    padding: 10px 0;
+    margin-right: 10px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.nav-btn a {
+    text-decoration: none;
+    color: white;
+    padding: 10px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-btn:hover {
+    background-color: #0072ce;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #1975c2;
+    width: 120px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 10px 10px;
+    text-align: left;
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dropdown-content a:hover {
+    background-color: #3293e0;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.nav-right {
+    width: 120px;
+    height: 40px;
+    background-image: url('../images/caixa-logo.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right center;
+}
+
+main {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 1560px;
+}
