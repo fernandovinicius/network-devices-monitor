@@ -1,0 +1,122 @@
+Estou desenvolvendo um sistema web para monitoramento de dispositivos de rede, com cerca de 1000 dispositivos.
+
+Parte 1: Banco de Dados
+
+No cadastro em uma base dados de cada dispositivo, deverá ser informada as seguintes informações:
+- ID (Chave primaria para identificar o dispositivo; gerado automaticamente);
+- IP (String sem espaços; IP no formato IPV4);
+- HOSTNAME (String sem espaços com máx. 50 caracteres, só aceita maiúsculas, números e underscore);
+- TYPE (String sem espaços com max. 30 caracteres, só aceita maiúsculas, números e underscore; tipo do dispositivo: switch, firewall, servidor, website, etc);
+- SITE (String sem espaços com max. 20 caracteres, só aceita maiúsculas, números e underscore; sigla do local onde está o dispositivo);
+- MONITORING_INTERVAL_SECONDS (Inteiro; Intervalo de monitoramento em segundos. Serão aceitos valores de 30 em 30 segundos, em até 10 níveis. Min=30s, Default=60s, Max=300s);
+- PING_TIMEOUT_MILLISECONDS (Inteiro; Maximo de tempo a esperar pela resposta de um ping, em milissegundo. Min=100ms, Max=5000ms, Default=1000ms);
+- PING_COUNT (Inteiro; Quantidade de Pings a disparar em uma monitoração. Valores de 1 a 10, Default=1);
+- MONITORING_ENABLED: (Booleano; True para indicar se o dispositivo será monitorado, False para o caso contrário);
+- STATUS (Inteiro; 0: ativo, 1: inativo);
+- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status).
+Chame essa tabela de DEVICES.
+
+Os dados de monitoração, para cada dispositivo, que serão armazenados são os seguintes
+- TIMESTAMP (data da hora da monitoração);
+- DEVICE_ID (id do dispositivo);
+- STATUS (Inteiro; indica se o dispositivo está ativo ou não, lógica será fornecida depois);
+- PACK_SENT (Quantidade de pacotes enviados);
+- PACK_RECV (Quantidade de pacotes recebidos);
+- RTT_MIN (Inteiro, em ms);
+- RTT_MAX (Inteiro, em ms);
+- RTT_AVG (Inteiro, em ms).
+Chame essa tabela de MONITORING_DATA.
+
+Armazene também, em uma tabela separada (tabela DEVICES_STATUS_HISTORY), o histórico dos status dos dispositivos, com os campos:
+- DEVICE_ID (Chave estrangeira para tabela DEVICES);
+- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status);
+- COUNT (Inteiro; contador que indica quantidade seguidas de ocorrência de PINGs com mesmo status).
+
+Considerando o que foi descrito, faça um arquivo docker-compose para que eu possa executar um servidor de banco de dados com PostGres e TimescaleDB para atender os requisitos.
+Me mostre como executar esse servidor.
+Faça os scripts em SQL para apagar todas tabelas, e outro para criar as tabelas.
+Faça um script SQL que insira dados de teste na tabela dispositivos (5 dispositivos); use sites populares reais.
+
+-------------------------------------
+Parte 2: Monitoração
+
+A aplicação que fará a monitoração desses dispositivos será feita em Python.
+Comece fazendo os arquivos python com as classes das entidades presentes banco de dados.
+Use SQLAlchemy.
+
+Essa aplicação rodará continuamente em um servidor que tem conexão com esses dispositivos.
+
+A aplicação deve manter uma lista local com os dispositivos a serem monitorados.
+Considere atualizar essa lista a cada 10 coletas.
+
+Para cada um dos 1000 dispositivos, a coleta de dados será feita disparando uma sequência de "PING_COUNT" comandos pings ("PING_COUNT" é configurado no cadastro do dispositivo, varia de 1 a 10).
+Considere usar threads em paralelo.
+
+Se a resposta atual do ping for igual ao estado anterior do dispositivo, o campo COUNT na tabela DEVICES_STATUS_HISTORY para esse dispositivo deverá ser atualizado.
+Se a resposta atual do ping for diferente do estado anterior do dispositivo, os campos STATUS e LAST_STATUS_CHANGE na tabela DEVICES para esse dispositivo deverão ser atulizados, e uma nova entrada na tabela DEVICES_STATUS_HISTORY para esse dispositivo, com o COUNT começando em 1 deverá ser criada.
+
+Esses resultados devem ser salvos em uma estrutura de dados conforme o banco de dados espera.
+Ao final dessa monitoração, isto é, com os resultados de todos os dispositivos coletados, ai esses dados deverão ser persistidos na base de dados.
+
+Implemente o script em Python conforme o que foi descrito.
+Faça tratamento de erros, e coloque mensagens de logs usando loguru.
+
+
+---------------------------------------------------------------
+Parte 3: Frontend
+
+Faça uma aplicação web, com Flask e Jinja2.
+
+Essa aplicação web deverá ter as seguintes páginas:
+- 3.1 Template base
+- 3.2 Página principal com a monitoração dos dispositivos;
+- 3.3 Página de cadastro de dispositivo;
+- 3.4 Página para exportar dispositivos;
+- 3.5 Página para editar um dispositivo;
+- 3.6 Página para excluir um ou vários dispositivos.
+
+Para a estilização de todas as páginas (CSS), utilize o mesmo estilo (fontes, cores, botões, etc.) do site da Caixa Econômica Federal https://www.caixa.gov.br/.
+
+----------
+Parte 3.1: Template base
+
+Essa aplicação deve funcionar da seguinte forma: um template base.html conterá as informações comuns a todas as páginas.
+As demais páginas terão templates html específicos que devem estender de base.html.
+
+No template base, coloque no topo superior uma barra horizontal.
+Essa barra conterá no canto esquerdo um menu com dois botões, e no canto direito uma logo.
+Coloque dois botões (INICIO e OPÇÕES) nesse menu de navegação. 
+O botão INICIO redireciona para a página principal.
+O botão OPÇÕES deve conter um submenu com as opções: EXPORTAR, CADASTRAR, EDITAR, EXCLUIR.
+No canto direito dessa barra deverá estar uma imagem com uma logo (arquivo local), que deverá ser carregada via CSS.
+
+Coloque os botões com a mesma altura da logo.
+Coloque os botões com a mesma largura, inclusive o submenu.
+No submenu, coloque uma cor de fundo levemente mais clara.
+
+Faça com que o conteúdo do template base ocupe 80% da largura do browser, porém no máximo 1560px.
+A barra superior deve permanecer com 100% da largura do browser.
+Faça com que o conteúdo da barra superior (menu e logo) também atenda a 80% da largura do browser, porém no máximo 1560px.
+
+Implemente o template base que atenda a esses requisitos.
+
+----------
+Parte 3.2: Página Principal
+
+A página principal deve conter uma tabela com as informações de status dos dispositivos.
+Nessa tabela serão mostradas as informações: STATUS, IP, HOSTNAME, TIPO (campo TYPE), LOCAL (campo SITE) e TEMPO (tempo decorrido desde a última mudança de status, ou seja: Data atual - LAST_STATUS_CHANGE).
+Essa tabela deve ser ordenada de forma mostrando os dispositivos inativos primeiro, e ordenada de forma descendente pelo TEMPO.
+Coloque uma cor vermelho claro nas linhas dos dispositivos inativos, e uma cor verde claro para os ativos.
+Coloque uma opção para clicar em cima do status do dispositivo que abra uma nova janela que mostre os dados da tabela DEVICES_HISTORY referentes a esse dispositivo.
+Coloque uma opção para clicar em cima do hostname desse dispositivo que abra nova janela que mostre todas as informações desse dispositivo (tabela DEVICES).
+Coloque, acima da tabela e alinhado à esquerda, um campo para filtrar dispositivos nessa tabela (seja por IP, HOSTNAME, TIPO ou LOCAL).
+Coloque, acima da tabela e alinhado à direita, a informação: "Ativos: XX, Inativos: YY, Total: ZZ".
+
+Coloque na pagina principal, abaixo da barra horizontal superior, um titulo escrito "Monitoração de Dispositivos".
+A página principal deve ser atualizada a cada 10 segundos, com essa informação sendo exibida logo abaixo desse título.
+
+
+
+
+
+
