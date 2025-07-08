@@ -4,16 +4,18 @@ Parte 1: Banco de Dados
 
 No cadastro em uma base dados de cada dispositivo, deverá ser informada as seguintes informações:
 - ID (Chave primaria para identificar o dispositivo; gerado automaticamente);
-- IP (String sem espaços; IP no formato IPV4);
-- HOSTNAME (String sem espaços com máx. 50 caracteres, só aceita maiúsculas, números e underscore);
+- IP_ADDRESS (String sem espaços; Not Null; IP no formato IPV4);
+- HOSTNAME (String sem espaços com máx. 50 caracteres, só aceita maiúsculas, números e underscore; Not Null);
+- SITE (String sem espaços com max. 20 caracteres, só aceita maiúsculas, números e underscore; Not Null; sigla do local onde está o dispositivo);
 - TYPE (String sem espaços com max. 30 caracteres, só aceita maiúsculas, números e underscore; tipo do dispositivo: switch, firewall, servidor, website, etc);
-- SITE (String sem espaços com max. 20 caracteres, só aceita maiúsculas, números e underscore; sigla do local onde está o dispositivo);
-- MONITORING_INTERVAL_SECONDS (Inteiro; Intervalo de monitoramento em segundos. Serão aceitos valores de 30 em 30 segundos, em até 10 níveis. Min=30s, Default=60s, Max=300s);
-- PING_TIMEOUT_MILLISECONDS (Inteiro; Maximo de tempo a esperar pela resposta de um ping, em milissegundo. Min=100ms, Max=5000ms, Default=1000ms);
-- PING_COUNT (Inteiro; Quantidade de Pings a disparar em uma monitoração. Valores de 1 a 10, Default=1);
-- MONITORING_ENABLED: (Booleano; True para indicar se o dispositivo será monitorado, False para o caso contrário);
-- STATUS (Inteiro; 0: ativo, 1: inativo);
-- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status).
+- MONITORING_INTERVAL_SECONDS (Inteiro; Not Null; Intervalo de monitoramento em segundos. Serão aceitos valores de 30 em 30 segundos, em até 10 níveis. Min=30s, Default=60s, Max=300s);
+- PING_TIMEOUT_MILLISECONDS (Inteiro; Not Null; Maximo de tempo a esperar pela resposta de um ping, em milissegundo. Min=100ms, Max=5000ms, Default=1000ms);
+- PING_COUNT (Inteiro; Not Null;Quantidade de Pings a disparar em uma monitoração. Valores de 1 a 10, Default=1);
+- MONITORING_ENABLED: (Booleano; Not Null; True para indicar se o dispositivo será monitorado, False para o caso contrário; Default=True);
+- CURRENT_STATUS (Inteiro; 0: ativo, 1: inativo, 99: nao-iniciado);, Default: 99;
+- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status; Default: now());
+- CURRENT_HISTORY_ID (Chave que guarda o ID da entrada atual desse dispositivo na tabela DEVICES_STATUS_HISTORY).
+
 Chame essa tabela de DEVICES.
 
 Os dados de monitoração, para cada dispositivo, que serão armazenados são os seguintes
@@ -28,9 +30,14 @@ Os dados de monitoração, para cada dispositivo, que serão armazenados são os
 Chame essa tabela de MONITORING_DATA.
 
 Armazene também, em uma tabela separada (tabela DEVICES_STATUS_HISTORY), o histórico dos status dos dispositivos, com os campos:
+- ID (Chave primária);
 - DEVICE_ID (Chave estrangeira para tabela DEVICES);
+- STATUS (Inteiro);
 - LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status);
 - COUNT (Inteiro; contador que indica quantidade seguidas de ocorrência de PINGs com mesmo status).
+
+Crie a seguinte regra: ao inserir um novo dispositivo na tabela DEVICES, crie uma entrada para esse dispositivo na tabela DEVICES_STATUS_HISTORY com STATUS=DEVICE.CURRENT_STATUS, LAST_STATUS_CHANGE=DEVICE.LAST_STATUS_CHANGE e COUNT=1, e atualize o DEVICE.CURRENT_HISTORY_ID com o valor do ID dessa entrada criada.
+
 
 Considerando o que foi descrito, faça um arquivo docker-compose para que eu possa executar um servidor de banco de dados com PostGres e TimescaleDB para atender os requisitos.
 Me mostre como executar esse servidor.
@@ -52,14 +59,15 @@ Considere atualizar essa lista a cada 10 coletas.
 Para cada um dos 1000 dispositivos, a coleta de dados será feita disparando uma sequência de "PING_COUNT" comandos pings ("PING_COUNT" é configurado no cadastro do dispositivo, varia de 1 a 10).
 Considere usar threads em paralelo.
 
-Se a resposta atual do ping for igual ao estado anterior do dispositivo, o campo COUNT na tabela DEVICES_STATUS_HISTORY para esse dispositivo deverá ser atualizado.
-Se a resposta atual do ping for diferente do estado anterior do dispositivo, os campos STATUS e LAST_STATUS_CHANGE na tabela DEVICES para esse dispositivo deverão ser atulizados, e uma nova entrada na tabela DEVICES_STATUS_HISTORY para esse dispositivo, com o COUNT começando em 1 deverá ser criada.
+Se a resposta atual do ping for igual ao estado anterior do dispositivo, o campo COUNT na tabela DEVICES_STATUS_HISTORY para esse dispositivo deverá ser incrementado.
+Se a resposta atual do ping for diferente do estado anterior do dispositivo, os campos CURRENT_STATUS e LAST_STATUS_CHANGE na tabela DEVICES para esse dispositivo deverão ser atulizados, e uma nova entrada na tabela DEVICES_STATUS_HISTORY para esse dispositivo com o COUNT começando em 1 deverá ser criada.
 
-Esses resultados devem ser salvos em uma estrutura de dados conforme o banco de dados espera.
-Ao final dessa monitoração, isto é, com os resultados de todos os dispositivos coletados, ai esses dados deverão ser persistidos na base de dados.
+Esses resultados (dados do dispositivo, dados historicos e dados da monitoração) devem ser armazenados localmente em estruturas de dados conforme o banco de dados espera.
+Somente ao final do ciclo de monitoração - isto é, com os resultados de todos os dispositivos coletados - é que os dados deverão ser persistidos na base de dados.
 
-Implemente o script em Python conforme o que foi descrito.
-Faça tratamento de erros, e coloque mensagens de logs usando loguru.
+Implemente a aplicação em Python conforme o que foi descrito.
+Estruture em arquivos separados a lógica da aplicação e o modelo das classes das tabelas do banco de dados.
+Inclua tratamento de erros em todos os pontos onde o código pode falhar, e coloque também mensagens de logs usando loguru.
 
 
 ---------------------------------------------------------------
