@@ -1,0 +1,29 @@
+<!-- <h2>Histórico</h2>
+<table class="device-history-table">
+    <thead><tr><th>Data</th><th>Contagem</th></tr></thead>
+    <tbody>
+        {% for entry in history %}
+        <tr><td>{{ entry[0] }}</td><td>{{ entry[1] }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table> -->
+
+<h2>Histórico</h2>
+<table class="device-history-table">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in history %}
+        <tr>
+            <td>{{ entry.last_status_change }}</td>
+            <td>{{ status(entry.status).name }}</td>
+            <td>{{ entry.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

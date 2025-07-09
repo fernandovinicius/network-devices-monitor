@@ -2,7 +2,8 @@ Estou desenvolvendo um sistema web para monitoramento de dispositivos de rede, c
 
 Parte 1: Banco de Dados
 
-No cadastro em uma base dados de cada dispositivo, deverá ser informada as seguintes informações:
+Uma tabela, chamada DEVICES, armazenará informações de cada dispositivo, com os seguintes campos:
+
 - ID (Chave primaria para identificar o dispositivo; gerado automaticamente);
 - IP_ADDRESS (String sem espaços; Not Null; IP no formato IPV4);
 - HOSTNAME (String sem espaços com máx. 50 caracteres, só aceita maiúsculas, números e underscore; Not Null);
@@ -13,61 +14,65 @@ No cadastro em uma base dados de cada dispositivo, deverá ser informada as segu
 - PING_COUNT (Inteiro; Not Null;Quantidade de Pings a disparar em uma monitoração. Valores de 1 a 10, Default=1);
 - MONITORING_ENABLED: (Booleano; Not Null; True para indicar se o dispositivo será monitorado, False para o caso contrário; Default=True);
 - CURRENT_STATUS (Inteiro; 0: ativo, 1: inativo, 99: nao-iniciado);, Default: 99;
-- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status; Default: now());
+- LAST_STATUS_CHANGE (Data da ultima ocorrência de mudança de status; Default: now());
 - CURRENT_HISTORY_ID (Chave que guarda o ID da entrada atual desse dispositivo na tabela DEVICES_STATUS_HISTORY).
 
-Chame essa tabela de DEVICES.
-
-Os dados de monitoração, para cada dispositivo, que serão armazenados são os seguintes
-- TIMESTAMP (data da hora da monitoração);
-- DEVICE_ID (id do dispositivo);
+Uma segunda tabela, chamada MONITORING_DATA, armazenará os dados coletados de cada dispositivo, e será utilizada para acompanhar a série temporal do dispositivo. Seus campos são:
+- TIMESTAMP (Data da coleta);
+- DEVICE_ID (Chave estrangeira para tabela DEVICES);
 - STATUS (Inteiro; indica se o dispositivo está ativo ou não, lógica será fornecida depois);
 - PACK_SENT (Quantidade de pacotes enviados);
 - PACK_RECV (Quantidade de pacotes recebidos);
 - RTT_MIN (Inteiro, em ms);
 - RTT_MAX (Inteiro, em ms);
 - RTT_AVG (Inteiro, em ms).
-Chame essa tabela de MONITORING_DATA.
 
-Armazene também, em uma tabela separada (tabela DEVICES_STATUS_HISTORY), o histórico dos status dos dispositivos, com os campos:
-- ID (Chave primária);
+Uma terceira tabela, chamada DEVICES_STATUS_HISTORY, armazenará o histórico dos status dos dispositivos, com os campos:
+- ID (Chave primária, autoincremento);
 - DEVICE_ID (Chave estrangeira para tabela DEVICES);
 - STATUS (Inteiro);
-- LAST_STATUS_CHANGE (data da ultima ocorrência de mudança de status);
+- LAST_STATUS_CHANGE (Data da ultima ocorrência de mudança de status);
 - COUNT (Inteiro; contador que indica quantidade seguidas de ocorrência de PINGs com mesmo status).
 
-Crie a seguinte regra: ao inserir um novo dispositivo na tabela DEVICES, crie uma entrada para esse dispositivo na tabela DEVICES_STATUS_HISTORY com STATUS=DEVICE.CURRENT_STATUS, LAST_STATUS_CHANGE=DEVICE.LAST_STATUS_CHANGE e COUNT=1, e atualize o DEVICE.CURRENT_HISTORY_ID com o valor do ID dessa entrada criada.
+Esse banco de dados deve possuir a seguinte regra: ao inserir um novo dispositivo na tabela DEVICES, crie uma entrada para esse dispositivo na tabela DEVICES_STATUS_HISTORY com
+(STATUS=DEVICE.CURRENT_STATUS, LAST_STATUS_CHANGE=DEVICE.LAST_STATUS_CHANGE, COUNT=1) e atualize o campo CURRENT_HISTORY_ID com o valor do ID dessa nova entrada criada.
 
+A tabela MONITORING_DATA deve ser otimizada para uso em séries temporais.
 
-Considerando o que foi descrito, faça um arquivo docker-compose para que eu possa executar um servidor de banco de dados com PostGres e TimescaleDB para atender os requisitos.
+Considerando tudo o que foi descrito, faça um arquivo docker-compose para que eu possa executar um servidor de banco de dados com PostGres e TimescaleDB para atender aos requisitos.
 Me mostre como executar esse servidor.
-Faça os scripts em SQL para apagar todas tabelas, e outro para criar as tabelas.
-Faça um script SQL que insira dados de teste na tabela dispositivos (5 dispositivos); use sites populares reais.
+Faça um script em SQL para criar as tabelas, com as regras impostas.
+Faça script em SQL para apagar todas tabelas do banco.
+Faça um script SQL para insirir dados de teste na tabela dispositivos (5 dispositivos); use sites populares reais.
+Faça um script SQL para atualizar o campo MONITORING_ENABLED de um dispositivo, dado seu HOSTNAME.
+Faça um script SQL para deletar um dispositivo, dado seu HOSTNAME.
 
--------------------------------------
+---------------------------------------
 Parte 2: Monitoração
 
-A aplicação que fará a monitoração desses dispositivos será feita em Python.
-Comece fazendo os arquivos python com as classes das entidades presentes banco de dados.
-Use SQLAlchemy.
+A aplicação que irá monitorar esses dispositivos será feita em Python.
+Comece fazendo os arquivos python para lidar com as relações descritas no banco de dados.
+
 
 Essa aplicação rodará continuamente em um servidor que tem conexão com esses dispositivos.
 
-A aplicação deve manter uma lista local com os dispositivos a serem monitorados.
-Considere atualizar essa lista a cada 10 coletas.
+A aplicação deve manter uma estrutura de dados com os dispositivos a serem monitorados (DEVICES) e suas entradas mais recentes na tabela DEVICES_STATUS_HISTORY (buscar pelo devices.CURRENT_HISTORY_ID).
+Chame essa estrutura de CURRENT_DEV_INFO.
+Considere atualizar essa estrutura de dados a cada 10 ciclos de coleta.
 
-Para cada um dos 1000 dispositivos, a coleta de dados será feita disparando uma sequência de "PING_COUNT" comandos pings ("PING_COUNT" é configurado no cadastro do dispositivo, varia de 1 a 10).
-Considere usar threads em paralelo.
+Para cada um dos 1000 dispositivos, a coleta de dados deverá ser feita disparando uma sequência de "PING_COUNT" comandos pings ("PING_COUNT" é configurado no cadastro do dispositivo, varia de 1 a 10).
+Paralelilze essa ação para cada dispositivo, visando aumentar a eficiência da aplicação.
 
-Se a resposta atual do ping for igual ao estado anterior do dispositivo, o campo COUNT na tabela DEVICES_STATUS_HISTORY para esse dispositivo deverá ser incrementado.
-Se a resposta atual do ping for diferente do estado anterior do dispositivo, os campos CURRENT_STATUS e LAST_STATUS_CHANGE na tabela DEVICES para esse dispositivo deverão ser atulizados, e uma nova entrada na tabela DEVICES_STATUS_HISTORY para esse dispositivo com o COUNT começando em 1 deverá ser criada.
+Se o status atual do ping for igual ao status anterior do dispositivo, o campo COUNT da entrada na tabela DEVICES_STATUS_HISTORY desse dispositivo deverá ser incrementada em 1.
+Se o status atual do ping for diferente do status anterior do dispositivo, os campos CURRENT_STATUS e LAST_STATUS_CHANGE de DEVICES para esse dispositivo deverão ser atulizados, e uma nova entrada na tabela DEVICES_STATUS_HISTORY para esse dispositivo com o COUNT começando em 1 deverá ser criada.
 
-Esses resultados (dados do dispositivo, dados historicos e dados da monitoração) devem ser armazenados localmente em estruturas de dados conforme o banco de dados espera.
-Somente ao final do ciclo de monitoração - isto é, com os resultados de todos os dispositivos coletados - é que os dados deverão ser persistidos na base de dados.
+As operações de commit na base de dados só devem ser feitas ao fim do ciclo de monitoração.
 
 Implemente a aplicação em Python conforme o que foi descrito.
 Estruture em arquivos separados a lógica da aplicação e o modelo das classes das tabelas do banco de dados.
-Inclua tratamento de erros em todos os pontos onde o código pode falhar, e coloque também mensagens de logs usando loguru.
+Não utilize SQLAlchemy.
+Inclua tratamento de erros em todos os pontos onde o código pode falhar.
+Coloque mensagens de logs usando loguru.
 
 
 ---------------------------------------------------------------
