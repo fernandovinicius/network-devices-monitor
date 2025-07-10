@@ -39,7 +39,7 @@ def device_info(hostname):
         return 404, "Device not found"
 
     device = Device(*row) if row else None
-    return render_template("dados_dispositivo.html", device=device)
+    return render_template("dados_dispositivo.html", device=device, status=DeviceStatus)
 
 
 @home_bp.route("/history/<hostname>")
@@ -72,7 +72,10 @@ def device_history(hostname):
 
     conn.close()
     return render_template(
-        "historico_dispositivo.html", hostname=hostname.upper(), history=history, status=DeviceStatus
+        "historico_dispositivo.html",
+        hostname=hostname.upper(),
+        history=history,
+        status=DeviceStatus,
     )
 
 
@@ -87,7 +90,9 @@ def get_devices(status_filter=None, search=None):
     params = []
 
     if search:
-        query += " WHERE HOSTNAME LIKE ? OR IP_ADDRESS LIKE ? OR TYPE LIKE ? OR SITE LIKE ?"
+        query += (
+            " WHERE HOSTNAME LIKE ? OR IP_ADDRESS LIKE ? OR TYPE LIKE ? OR SITE LIKE ?"
+        )
         term = f"%{search.upper()}%"
         params = [term] * 4
 
