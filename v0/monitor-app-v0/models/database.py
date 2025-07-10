@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+
 @dataclass
 class Device:
     id: Optional[int]
@@ -17,6 +18,7 @@ class Device:
     last_status_change: datetime
     current_history_id: Optional[int]
 
+
 @dataclass
 class MonitoringData:
     timestamp: datetime
@@ -27,6 +29,7 @@ class MonitoringData:
     rtt_min: int
     rtt_max: int
     rtt_avg: int
+
 
 @dataclass
 class DeviceStatusHistory:

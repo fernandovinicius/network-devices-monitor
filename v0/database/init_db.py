@@ -7,7 +7,10 @@ DB_PATH = "network_monitor.db"
 # Dados de teste
 test_devices = [
     ('8.8.8.8', 'GOOGLE_DNS', 'SP', 'SRV'),
-    ('1.1.1.1', 'CLOUDFLARE_DNS', 'RJ', 'FIREWALL')
+    ('1.1.1.1', 'CLOUDFLARE_DNS', 'RJ', 'SRV'),
+    ('192.168.50.1', 'FERNANDO_5G', 'DF', 'ROUTER'),
+    ('192.168.50.13', 'FERNANDO_PC', 'DF', 'PC'),
+    ('192.168.50.15', 'GALAXY_S22', 'DF', 'CEL')
 ]
 
 
