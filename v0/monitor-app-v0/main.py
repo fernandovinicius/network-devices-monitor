@@ -12,7 +12,7 @@ from ping3 import ping
 device_list = []
 DATABASE_URL = '../database/network_monitor.db'
 
-FETCH_DEVICES_CYCLES = 2
+FETCH_DEVICES_CYCLES = 1
 MONITOR_INTERVAL_SEC = 30
 
 LINE_BREAK = "\n" + 80*"="
@@ -60,7 +60,7 @@ def monitor_device(device):
     ip_address = device.ip_address
     hostname = device.hostname
     ping_count = device.ping_count
-    timeout_ms = device.ping_timeout_milliseconds
+    timeout_s = max(round(device.ping_timeout_milliseconds/1000), 1)
     old_status = device.current_status
     history_id = device.current_history_id
     current_timestamp = datetime.now().isoformat()
@@ -68,7 +68,7 @@ def monitor_device(device):
     sent, recv, rtt_min, rtt_max, rtt_avg = ping_device(
         ip_address=ip_address,
         count=ping_count,
-        timeout_sec=timeout_ms//1000,
+        timeout_sec=timeout_s,
     )
     new_status = DeviceStatus.UP.value if recv > 0 else DeviceStatus.DOWN.value
     logger.info(
