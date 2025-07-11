@@ -6,24 +6,27 @@ DB_PATH = "network_monitor.db"
 
 # Dados de teste
 test_devices = [
-    ('8.8.8.8', 'GOOGLE_DNS', 'SP', 'SRV'),
-    ('1.1.1.1', 'CLOUDFLARE_DNS', 'RJ', 'SRV'),
-    ('192.168.50.1', 'FERNANDO_5G', 'DF', 'ROUTER'),
-    ('192.168.50.13', 'FERNANDO_PC', 'DF', 'PC'),
-    ('192.168.50.15', 'GALAXY_S22', 'DF', 'CEL')
+    ("8.8.8.8", "GOOGLE_DNS", "SP", "SRV"),
+    ("1.1.1.1", "CLOUDFLARE_DNS", "RJ", "SRV"),
+    ("192.168.50.1", "FERNANDO_5G", "DF", "ROUTER"),
+    ("192.168.50.13", "FERNANDO_PC", "DF", "PC"),
+    ("192.168.50.15", "GALAXY_S22", "DF", "CEL"),
 ]
 
 
 def delete_tables(cursor):
-    cursor.executescript("""
+    cursor.executescript(
+        """
         DROP TABLE IF EXISTS MONITORING_DATA;
         DROP TABLE IF EXISTS DEVICES_STATUS_HISTORY;
         DROP TABLE IF EXISTS DEVICES;
-    """)
+    """
+    )
 
 
 def create_tables(cursor):
-    cursor.executescript("""
+    cursor.executescript(
+        """
     PRAGMA foreign_keys = ON;
 
     CREATE TABLE IF NOT EXISTS DEVICES (
@@ -62,33 +65,45 @@ def create_tables(cursor):
         RTT_AVG INTEGER,
         FOREIGN KEY (DEVICE_ID) REFERENCES DEVICES(ID)
     );
-    """)
+    """
+    )
+
 
 def insert_device(cursor, ip, hostname, site, dtype):
     now = datetime.now().isoformat()
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO DEVICES (
             IP_ADDRESS, HOSTNAME, SITE, TYPE,
             MONITORING_INTERVAL_SECONDS, PING_TIMEOUT_MILLISECONDS,
             PING_COUNT, MONITORING_ENABLED, CURRENT_STATUS, LAST_STATUS_CHANGE
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (ip, hostname, site, dtype, 30, 1000, 3, True, 99, now))
+    """,
+        (ip, hostname, site, dtype, 30, 1000, 3, True, 99, now),
+    )
 
     device_id = cursor.lastrowid
 
     # Cria entrada no histórico
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO DEVICES_STATUS_HISTORY (
             DEVICE_ID, STATUS, LAST_STATUS_CHANGE, COUNT
         ) VALUES (?, ?, ?, ?)
-    """, (device_id, 99, now, 1))
+    """,
+        (device_id, 99, now, 1),
+    )
 
     history_id = cursor.lastrowid
 
     # Atualiza o campo CURRENT_HISTORY_ID
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE DEVICES SET CURRENT_HISTORY_ID = ? WHERE ID = ?
-    """, (history_id, device_id))
+    """,
+        (history_id, device_id),
+    )
+
 
 def main():
     conn = sqlite3.connect(DB_PATH)
@@ -103,6 +118,7 @@ def main():
     conn.commit()
     conn.close()
     print("✅ Banco de dados criado e populado com sucesso.")
+
 
 if __name__ == "__main__":
     main()

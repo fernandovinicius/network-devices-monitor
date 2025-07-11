@@ -30,7 +30,9 @@ result_queue = asyncio.Queue()
 async def fetch_devices(db_path=DATABASE_URL):
     try:
         async with aiosqlite.connect(db_path) as db:
-            async with db.execute("SELECT * FROM devices WHERE monitoring_enabled=true;") as cursor:
+            async with db.execute(
+                "SELECT * FROM devices WHERE monitoring_enabled=true;"
+            ) as cursor:
                 rows = await cursor.fetchall()
                 return [Device(*row) for row in rows]
     except Exception as e:
@@ -42,20 +44,20 @@ async def db_writer(db_path):
     async with aiosqlite.connect(db_path) as db:
         while True:
             result = await result_queue.get()
-            
+
             # Unpack estruturas
             device, monitoring_data = result
-            
+
             # Insere dados em MonitoringData
             await save_monitoring_data(data=monitoring_data, cursor=db)
 
-            # Unpack 
+            # Unpack
             timestamp = monitoring_data.timestamp
             new_status = monitoring_data.status
             old_status = device.current_status
             history_id = device.current_history_id
             device_id = device.id
-            
+
             if new_status == old_status:
                 await increment_count_history(
                     history_id=history_id,
@@ -98,14 +100,18 @@ async def async_ping_device(device: Device):
     for _ in range(count):
         try:
             delay = await ping(dest_addr=ip_address, timeout=timeout_sec)
-            delay = 1000 * delay # Converte para ms
+            delay = 1000 * delay  # Converte para ms
             rtts.append(delay)
             sent += 1
         except Exception:
             delay = None
 
     if len(rtts):
-        rtt_min, rtt_max, rtt_avg = int(min(rtts)), int(max(rtts)), int(sum(rtts) / len(rtts))
+        rtt_min, rtt_max, rtt_avg = (
+            int(min(rtts)),
+            int(max(rtts)),
+            int(sum(rtts) / len(rtts)),
+        )
     else:
         rtt_min = rtt_max = rtt_avg = None
 
@@ -152,9 +158,15 @@ async def main_loop():
             if cycle % FETCH_DEVICES_CYCLES == 0:
                 devices = await fetch_devices()
 
-            devices = [d for d in devices if ((cycle * MONITOR_INTERVAL_SEC) % d.monitoring_interval_seconds == 0)]
-            logger.info(f"Iniciando ciclo {cycle} de monitoração: {len(devices)} dispositivos")
-            
+            devices = [
+                d
+                for d in devices
+                if ((cycle * MONITOR_INTERVAL_SEC) % d.monitoring_interval_seconds == 0)
+            ]
+            logger.info(
+                f"Iniciando ciclo {cycle} de monitoração: {len(devices)} dispositivos"
+            )
+
             await monitor_devices(devices)
             await result_queue.join()
 
@@ -162,7 +174,7 @@ async def main_loop():
             elapsed = time.time() - start
             logger.info(f"Fim do ciclo. Duração: {elapsed:.3f} s" + LINE_BREAK)
             await asyncio.sleep(MONITOR_INTERVAL_SEC - elapsed)
-    
+
     except KeyboardInterrupt:
         await result_queue.put(None)
         await writer_task

@@ -31,7 +31,7 @@ async def insert_new_history(cursor: Cursor, data: DeviceStatusHistory):
             data.last_status_change,
             data.count,
         ),
-    ) 
+    )
     return res.lastrowid
 
 

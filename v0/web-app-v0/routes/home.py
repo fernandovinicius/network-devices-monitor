@@ -41,7 +41,9 @@ def device_info(hostname):
 
     device = Device(*row) if row else None
     try:
-        data_formatada = datetime.fromisoformat(device.last_status_change).strftime("%d/%m/%Y %H:%M")
+        data_formatada = datetime.fromisoformat(device.last_status_change).strftime(
+            "%d/%m/%Y %H:%M"
+        )
         device.last_status_change = data_formatada
     except Exception:
         pass
