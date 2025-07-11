@@ -1,3 +1,4 @@
+from datetime import datetime
 import sqlite3
 from flask import Blueprint, render_template, request
 from config import DB_URL
@@ -39,6 +40,11 @@ def device_info(hostname):
         return 404, "Device not found"
 
     device = Device(*row) if row else None
+    try:
+        data_formatada = datetime.fromisoformat(device.last_status_change).strftime("%d/%m/%Y %H:%M")
+        device.last_status_change = data_formatada
+    except Exception:
+        pass
     return render_template("dados_dispositivo.html", device=device, status=DeviceStatus)
 
 

@@ -1,0 +1,122 @@
+/* === Barra Superior === */
+.navbar {
+    width: 100%;
+    background-color: #003366;
+    /* background-color: black; */
+    color: white;
+    padding: 0;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Barra superior */
+.navbar-content {
+    width: 80%;
+    max-width: 1560px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* Logo */
+.nav-right {
+    width: 120px;
+    height: 40px;
+    background-image: url('../images/caixa-logo.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: right center;
+}
+
+/* Menu Superior */
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Botão */
+.nav-btn {
+    background-color: #005ca9;
+    color: white;
+    border: none;
+    width: 150px;
+    height: 40px;
+    padding: 10px 0;
+    margin-right: 10px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+/* Botão: Links */
+.nav-btn a {
+    text-decoration: none;
+    color: white;
+    padding: 10px 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Botão: Hover */
+.nav-btn:hover {
+    background-color: #0074d9;
+}
+
+/* Menu: Dropdown */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Menu: Conteúdo do dropdown */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #83beee;
+    width: 150px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+/* Menu: Links dentro do dropdown */
+.dropdown-content a {
+    color: rgb(0, 0, 0);
+    padding: 10px 10px;
+    text-align: left;
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+.dropdown-content a:hover {
+    background-color: #3293e0;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
+/* Barra de informações */
+.navbar-info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.navbar-info-content {
+    width: 80%;
+    max-width: 1560px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px 0 10px;
+    font-size: 14px;
+}

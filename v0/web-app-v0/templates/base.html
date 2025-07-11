@@ -5,40 +5,47 @@
     <meta charset="UTF-8">
     <title>{% block title %}Pingador 2.0{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/top-bar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/filter-bar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/cadastrar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/editar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/listar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/exportar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/excluir.css') }}">
     
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 
 <body>
-    <header class="top-bar">
-        <div class="top-bar-container">
+    <header class="navbar">
+        <div class="navbar-content">
             <!-- Menu Superior -->
-            <nav class="menu-superior">
-                <button class="btn-menu"><a href="{{ url_for('home.home') }}">🏠 INÍCIO</a></button>
-                <div class="options-menu">
-                    <button class="btn-menu" onclick="toggleSubmenu()">⚙️ OPÇÕES</button>
-                    <ul id="options-submenu" class="submenu">
-                        <li><a href="/listar">LISTAR</a></li>
-                        <li><a href="/cadastrar">CADASTRAR</a></li>
-                        <li><a href="/editar">EDITAR</a></li>
-                        <li><a href="/excluir">EXCLUIR</a></li>
-                    </ul>
+            <nav class="nav-left">
+                <button class="nav-btn"><a href="{{ url_for('home.home') }}">🏠 INÍCIO</a></button>
+
+                <div class="dropdown">
+                    <button class="nav-btn">⚙️ DISPOSITIVOS</button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('exportar.exportar') }}">EXPORTAR</a>
+                        <a href="{{ url_for('cadastrar.cadastrar') }}">CADASTRAR</a>
+                        <a href="{{ url_for('editar.editar') }}">EDITAR</a>
+                        <a href="{{ url_for('excluir.excluir') }}">EXCLUIR</a>
+                    </div>
                 </div>
             </nav>
 
             <!-- Logo -->
-            <div class="logo"></div>
-            <!-- <img src="{{ url_for('static', filename='images/caixa-logo.png') }}" class="logo"> -->
+            <div class="nav-right"></div>
         </div>
     </header>
+
+    <div class="navbar-info">
+        <div class="navbar-info-content">
+            <div>CETEL - CENTRALIZADORA DE TELECOMUNICAÇÕES</div>
+            <div><em>#INTERNO.TODOS</em></div>
+        </div>
+    </div>
 
     <main class="main-container">
         {% block content %}{% endblock %}

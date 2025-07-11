@@ -89,20 +89,20 @@ async def db_writer(db_path):
 async def async_ping_device(device: Device):
     ip_address = device.ip_address
     count = device.ping_count
-    timeout_sec = max(round(device.ping_timeout_milliseconds / 1000), 1)
+    timeout_sec = device.ping_timeout_milliseconds / 1000
     current_timestamp = datetime.now().isoformat()
     device_id = device.id
 
     rtts = []
     sent = 0
-    for k in range(count):
+    for _ in range(count):
         try:
-            response = await ping(dest_addr=ip_address, timeout=timeout_sec)
+            delay = await ping(dest_addr=ip_address, timeout=timeout_sec)
+            delay = 1000 * delay # Converte para ms
+            rtts.append(delay)
+            sent += 1
         except Exception:
-            response = None
-        sent += 1
-        if response:
-            rtts.append(response)
+            delay = None
 
     if len(rtts):
         rtt_min, rtt_max, rtt_avg = int(min(rtts)), int(max(rtts)), int(sum(rtts) / len(rtts))
@@ -152,8 +152,9 @@ async def main_loop():
             if cycle % FETCH_DEVICES_CYCLES == 0:
                 devices = await fetch_devices()
 
+            devices = [d for d in devices if ((cycle * MONITOR_INTERVAL_SEC) % d.monitoring_interval_seconds == 0)]
             logger.info(f"Iniciando ciclo {cycle} de monitoração: {len(devices)} dispositivos")
-
+            
             await monitor_devices(devices)
             await result_queue.join()
 
