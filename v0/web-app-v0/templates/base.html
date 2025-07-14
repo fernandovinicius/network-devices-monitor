@@ -22,7 +22,7 @@
         <div class="navbar-content">
             <!-- Menu Superior -->
             <nav class="nav-left">
-                <button class="nav-btn"><a href="{{ url_for('home.home') }}">🏠 INÍCIO</a></button>
+                <a href="{{ url_for('home.home') }}"><button class="nav-btn">🏠 INÍCIO</button></a>
 
                 <div class="dropdown">
                     <button class="nav-btn">⚙️ DISPOSITIVOS</button>
@@ -40,16 +40,16 @@
         </div>
     </header>
 
-    <div class="navbar-info">
-        <div class="navbar-info-content">
-            <div>CETEL - CENTRALIZADORA DE TELECOMUNICAÇÕES</div>
-            <div><em>#INTERNO.TODOS</em></div>
-        </div>
-    </div>
-
     <main class="main-container">
         {% block content %}{% endblock %}
     </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>CETEL - CENTRALIZADORA DE TELECOMUNICAÇÕES</p>
+            <p><em>#INTERNO.TODOS</em></p>
+        </div>
+    </footer>
 </body>
 
 </html>

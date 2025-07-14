@@ -101,22 +101,3 @@
 .dropdown:hover .dropdown-content {
     display: block;
 }
-
-
-/* Barra de informações */
-.navbar-info {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.navbar-info-content {
-    width: 80%;
-    max-width: 1560px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 10px 0 10px;
-    font-size: 14px;
-}

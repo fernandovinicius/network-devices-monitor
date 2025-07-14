@@ -1,6 +1,6 @@
 /* === Reset básico === */
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
@@ -9,10 +9,12 @@ body {
 
 /* === Container Principal === */
 .main-container {
-    padding: 25px 50px 50px 50px;
-    width: 80%;
+    /* padding: 25px 50px 50px 50px; */
     max-width: 1560px;
-    margin: 0 auto;
+    margin: auto;
+    width: 80%;
+    /* background-color: white; */
+    /* box-shadow: 0 0 10px rgba(0,0,0,0.1); */
 }
 
 /* === Títulos === */
@@ -43,4 +45,16 @@ h3 {
     font-weight: bold;
     margin-bottom: 10px;
     color: #005ca9;
+}
+
+/* Footer */
+.footer-content {
+    max-width: 1560px;
+    margin: auto;
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px 0 10px;
+    font-size: 14px;
 }
