@@ -99,10 +99,10 @@ async def async_ping_device(device: Device):
     sent = 0
     for _ in range(count):
         try:
+            sent += 1
             delay = await ping(dest_addr=ip_address, timeout=timeout_sec)
             delay = 1000 * delay  # Converte para ms
             rtts.append(delay)
-            sent += 1
         except Exception:
             delay = None
 
