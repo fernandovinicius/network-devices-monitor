@@ -24,7 +24,7 @@
         </div>
 
         <label>Intervalo de Monitoração:</label>
-        <select name="monitoring_interval" required>
+        <select name="monitoring_interval_seconds" required>
             <option value="30">30 segundos</option>
             <option value="60" selected>1 minuto</option>
             <option value="120">2 minutos</option>
@@ -39,7 +39,7 @@
         </select>
 
         <label>Ping Timeout:</label>
-        <select name="ping_timeout" required>
+        <select name="ping_timeout_milliseconds" required>
             <option value="100" selected>100 ms</option>
             <option value="250">250 ms</option>
             <option value="500" selected>500 ms</option>
@@ -148,9 +148,9 @@
             ["Hostname", form.hostname.value],
             ["Site", form.site.value],
             ["Tipo", form.type.value],
-            ["Intervalo de Monitoração", form.monitoring_interval.value + " segundos"],
+            ["Intervalo de Monitoração", form.monitoring_interval_seconds.value + " segundos"],
             ["Quantidade de  Pings", form.ping_count.value],
-            ["Ping Timeout", form.ping_timeout.value + " ms"],
+            ["Ping Timeout", form.ping_timeout_milliseconds.value + " ms"],
             ["Habilitar Monitoração", form.monitoring_enabled.checked ? "Sim" : "Não"],
         ];
         let modalData = "";
@@ -182,6 +182,7 @@
 
     function closeResultModal() {
         document.getElementById("resultModal").style.display = "none";
+        window.location.href = "/";
     }
 </script>
 
