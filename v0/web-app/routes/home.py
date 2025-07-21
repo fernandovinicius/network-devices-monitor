@@ -87,16 +87,10 @@ def device_history(hostname):
     )
 
 
-def get_devices(status_filter=None, search=None):
-    import sqlite3
-    from datetime import datetime
-
-    conn = sqlite3.connect(DB_URL)
-    cursor = conn.cursor()
-
+def get_devices(search=None):
+    # Monta Query
     query = "SELECT CURRENT_STATUS, IP_ADDRESS, HOSTNAME, TYPE, SITE, LAST_STATUS_CHANGE FROM DEVICES"
     params = []
-
     if search:
         query += (
             " WHERE HOSTNAME LIKE ? OR IP_ADDRESS LIKE ? OR TYPE LIKE ? OR SITE LIKE ?"
@@ -104,6 +98,9 @@ def get_devices(status_filter=None, search=None):
         term = f"%{search.upper()}%"
         params = [term] * 4
 
+    # Executa Query no Banco
+    conn = sqlite3.connect(DB_URL)
+    cursor = conn.cursor()
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()

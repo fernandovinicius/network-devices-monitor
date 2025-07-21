@@ -123,7 +123,7 @@ def parse_income_data(form):
             error_msg += "\n" + msg
 
     if len(error_msg):
-        print("error_msg: " + error_msg)
+        logger.error("error_msg: " + error_msg)
         return None
 
     return Device(
