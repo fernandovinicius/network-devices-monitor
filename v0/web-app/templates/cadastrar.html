@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="create-form">
+    <h2>Cadastrar Dispositivo</h2>
+
+    <form id="deviceForm">
+        <label>IP:</label>
+        <input type="text" name="ip_address" required pattern="^(\d{1,3}\.){3}\d{1,3}$" placeholder="192.168.0.1" />
+        <div class="error" id="ipError">Digite um IP válido no formato IPv4 (ex: 192.168.0.1).</div>
+
+        <label>Hostname: </label>
+        <input type="text" name="hostname" maxlength="50" required pattern="^[A-Z0-9_.-]+$" />
+        <div class="error" id="hostError">Use letras maiúsculas, números, underscore, ponto ou traço. Sem espaços.</div>
+
+        <label>Tipo:</label>
+        <input type="text" name="type" maxlength="30" required pattern="^[A-Z0-9_.-]+$" />
+        <div class="error" id="typeError">Use letras maiúsculas, números, underscore, ponto ou traço. Sem espaços.</div>
+
+        <label>Site:</label>
+        <div class="site-content">
+            <label><input type="radio" name="site" value="CTC" checked /> CTC</label>
+            <label><input type="radio" name="site" value="DTC" /> DTC</label>
+        </div>
+
+        <label>Intervalo de Monitoração:</label>
+        <select name="monitoring_interval_seconds" required>
+            <option value="30">30 segundos</option>
+            <option value="60" selected>1 minuto</option>
+            <option value="120">2 minutos</option>
+            <option value="300">5 minutos</option>
+        </select>
+        <label>Quantidade de Pings:</label>
+        <select name="ping_count" required>
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
+
+        <label>Ping Timeout:</label>
+        <select name="ping_timeout_milliseconds" required>
+            <option value="100" selected>100 ms</option>
+            <option value="250">250 ms</option>
+            <option value="500" selected>500 ms</option>
+            <option value="1000">1 s</option>
+            <option value="2000">2 s</option>
+        </select>
+
+        <label>Ativar Monitoração:</label>
+        <label class="switch">
+            <input type="checkbox" name="monitoring_enabled" value="true" checked>
+            <span class="slider"></span>
+        </label><br>
+        <br>
+
+        <button type="button" class="btn-save">SALVAR</button>
+    </form>
+</div>
+
+<!-- Modal de Confirmação -->
+<div id="previewModal" class="preview-modal">
+    <div class="preview-modal-content">
+        <h3>Confirma dados?</h3>
+        <table id="previewModalTable" class="preview-modal-table"></table>
+        <div class="preview-modal-btns">
+            <button onclick="submitCreateForm()">Confirmar</button>
+            <button onclick="closePreviewModal()">Voltar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Resultado -->
+<div id="resultModal" class="result-modal">
+    <div class="result-modal-content">
+        <h3>Resultado</h3>
+        <div id="resultContent" class="result-modal-msg"></div>
+        <div class="result-modal-btns">
+            <button onclick="closeResultModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const saveButton = document.querySelector(".btn-save");
+        const form = document.getElementById("deviceForm");
+
+        saveButton.addEventListener("click", function () {
+            if (validateForm()) {
+                previewModal();
+            }
+        });
+
+        function validateForm() {
+            // IP
+            const ip = form.ip_address;
+            const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+            const ipParts = ip.value.trim().split('.');
+            const isValidIP = ipRegex.test(ip.value.trim()) &&
+                ipParts.every(part => !isNaN(part) && Number(part) >= 0 && Number(part) <= 255);
+
+            const ipError = document.getElementById("ipError");
+            if (!isValidIP) {
+                ipError.style.display = "block";
+                ipError.style.color = "red";
+                return false;
+            } else {
+                ipError.style.display = "none";
+            }
+
+            // HOSTNAME
+            const hostname = form.hostname;
+            hostname.value = hostname.value.toUpperCase().replace(/\s/g, '');
+            const hostRegex = /^[A-Z0-9_.-]+$/;
+            const hostError = document.getElementById("hostError");
+            if (!hostRegex.test(hostname.value)) {
+                hostError.style.display = "block";
+                hostError.style.color = "red";
+                return false;
+            } else {
+                hostError.style.display = "none";
+            }
+
+            // TYPE
+            const type = form.type;
+            type.value = type.value.toUpperCase().replace(/\s/g, '');
+            const typeRegex = /^[A-Z0-9_.-]+$/;
+            const typeError = document.getElementById("typeError");
+            if (!typeRegex.test(type.value)) {
+                typeError.style.display = "block";
+                typeError.style.color = "red";
+                return false;
+            } else {
+                typeError.style.display = "none";
+            }
+
+            return true;
+        }
+    });
+
+
+    function previewModal() {
+        const form = document.getElementById("deviceForm");
+        const dataRows = [
+            ["IP", form.ip_address.value],
+            ["Hostname", form.hostname.value],
+            ["Site", form.site.value],
+            ["Tipo", form.type.value],
+            ["Intervalo de Monitoração", form.monitoring_interval_seconds.value + " segundos"],
+            ["Quantidade de  Pings", form.ping_count.value],
+            ["Ping Timeout", form.ping_timeout_milliseconds.value + " ms"],
+            ["Habilitar Monitoração", form.monitoring_enabled.checked ? "Sim" : "Não"],
+        ];
+        let modalData = "";
+        for (const [label, value] of dataRows) {
+            modalData += `<tr><th>${label}</th><td>${value}</td></tr>`;
+        }
+        document.getElementById("previewModalTable").innerHTML = modalData;
+        document.getElementById("previewModal").style.display = "block";
+    }
+
+    function closePreviewModal() {
+        document.getElementById("previewModal").style.display = "none";
+    }
+
+    function submitCreateForm() {
+        const form = document.getElementById("deviceForm");
+        const formData = new FormData(form);
+
+        fetch('/cadastrar', {
+            method: 'POST',
+            body: formData
+        }).then(res => res.json())
+            .then(res => {
+                document.getElementById("previewModal").style.display = "none";
+                document.getElementById("resultContent").innerHTML = `<p>${res.message}</p>`;
+                document.getElementById("resultModal").style.display = "block";
+            });
+    }
+
+    function closeResultModal() {
+        document.getElementById("resultModal").style.display = "none";
+        window.location.href = "/";
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,127 @@
+/* === Tabela de Dispositivos === */
+.status-icon {
+    height: 24px;
+    vertical-align: middle;
+    margin-right: auto;
+}
+
+.device-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Alinhar centralmente a coluna STATUS */
+.device-table td:first-child,
+.device-table th:first-child {
+    width: 135px;
+}
+.device-table td:nth-child(2),
+.device-table th:nth-child(2) {
+    width: 200px;
+}
+
+
+.device-table td a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #003366;
+}
+
+
+/* Cabeçalho da tabela */
+.device-table th {
+    background-color: #003366;
+    color: white;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    vertical-align: middle;
+}
+
+/* Células da tabela */
+.device-table td {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    color: #003366;
+    vertical-align: middle;
+}
+
+/* Realce ao passar o mouse */
+.device-table tbody tr:hover {
+    background-color: #dbeeff;
+    transition: background-color 0.2s ease;
+}
+
+/* Arredondamento no topo: cabeçalho esquerdo e direito */
+.device-table th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.device-table th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* Arredondamento na base: última linha esquerda e direita */
+.device-table tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+.device-table tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+/* Remove bordas externas: topo, base, lados */
+.device-table tr:first-child th {
+    border-top: none;
+}
+
+.device-table tr:last-child td {
+    border-bottom: none;
+}
+
+.device-table td:first-child,
+.device-table th:first-child {
+    border-left: none;
+}
+
+.device-table td:last-child,
+.device-table th:last-child {
+    border-right: none;
+}
+
+/* Cores de status */
+tr.ativo {
+    background-color: #d0f0d0;
+}
+
+tr.inativo {
+    background-color: #f0d0d0;
+}
+
+tr.desconhecido {
+    background-color: #b0b0b0;
+}
+
+/* Ícone genérico aplicado como fundo */
+.status-cell {
+    text-align: left;
+    vertical-align: middle;
+    padding-left: 50px;
+}
+
+.status-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 8px;
+}
+
+.status-icon {
+    width: 20px;
+    height: 20px;
+}
