@@ -1,7 +1,7 @@
 from datetime import datetime
 import sqlite3
 from flask import Blueprint, render_template, request
-from config import DB_URL
+from config import DATABASE_URL
 from models.database import Device, DeviceStatusHistory
 from models.status import DeviceStatus
 
@@ -25,7 +25,7 @@ def home():
 
 @home_bp.route("/device/<hostname>")
 def device_info(hostname):
-    conn = sqlite3.connect(DB_URL)
+    conn = sqlite3.connect(DATABASE_URL)
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -52,7 +52,7 @@ def device_info(hostname):
 
 @home_bp.route("/history/<hostname>")
 def device_history(hostname):
-    conn = sqlite3.connect(DB_URL)
+    conn = sqlite3.connect(DATABASE_URL)
     cursor = conn.cursor()
     cursor.execute(
         """
@@ -99,7 +99,7 @@ def get_devices(search=None):
         params = [term] * 4
 
     # Executa Query no Banco
-    conn = sqlite3.connect(DB_URL)
+    conn = sqlite3.connect(DATABASE_URL)
     cursor = conn.cursor()
     cursor.execute(query, params)
     rows = cursor.fetchall()

@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 from flask import Blueprint, jsonify
 from flask import request, render_template
-from config import DB_URL
+from config import DATABASE_URL
 from loguru import logger
 from models.database import Device
 from models.status import DeviceStatus
@@ -40,7 +40,7 @@ def insert_device(form):
 
     current_date = datetime.now().isoformat()
 
-    with sqlite3.connect(DB_URL) as conn:
+    with sqlite3.connect(DATABASE_URL) as conn:
         cursor = conn.cursor()
         cursor.execute(
             """

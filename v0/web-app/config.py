@@ -1,1 +1,1 @@
-DB_URL = "../backend/database/network_monitor.db"
+DATABASE_URL = "../backend/database/network_monitor.db"
