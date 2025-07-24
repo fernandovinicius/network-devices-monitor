@@ -7,7 +7,7 @@ from utils.http_status import (
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_ERROR,
 )
-from models.monitoring_data import MonitoringData
+
 
 data_ns = Namespace("monitoring", description="Dados de monitoramento dos dispositivos")
 
@@ -33,14 +33,14 @@ class MonitoringDataResource(Resource):
         """Retorna os dados de monitoramento de um dispositivo pelo ID"""
         try:
             data = get_monitoring_data(device_id)
-            if data:
-                return data, HTTP_200_OK
-            else:
-                data_ns.abort(
-                    HTTP_404_NOT_FOUND, "Nenhum dado de monitoramento encontrado."
-                )
         except Exception as e:
             logger.error(
                 f"Erro ao buscar dados de monitoramento para o dispositivo {device_id}: {e}"
             )
             data_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if not data:
+            data_ns.abort(
+                HTTP_404_NOT_FOUND, "Nenhum dado de monitoramento encontrado."
+            )
+        return data, HTTP_200_OK
