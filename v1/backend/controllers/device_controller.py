@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from loguru import logger
 from services.device_service import (
@@ -14,11 +14,14 @@ from services.device_service import (
 from utils.http_status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
+    HTTP_204_UPDATED,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_ERROR,
 )
+from models.device_status import DeviceStatus
 from models.device_model import Device
+
 
 device_ns = Namespace("devices", description="Operações de dispositivos de rede")
 
@@ -47,10 +50,15 @@ device_model = device_ns.model(
 device_status_enum = device_ns.model(
     "DeviceStatus",
     {
-        "UP": fields.Integer(example=0, description="Dispositivo está online"),
-        "DOWN": fields.Integer(example=1, description="Dispositivo está offline"),
+        "UP": fields.Integer(
+            example=DeviceStatus.UP.value, description="Dispositivo está online"
+        ),
+        "DOWN": fields.Integer(
+            example=DeviceStatus.DOWN.value, description="Dispositivo está offline"
+        ),
         "NOT_STARTED": fields.Integer(
-            example=99, description="Monitoramento não iniciado"
+            example=DeviceStatus.NOT_STARTED.value,
+            description="Monitoramento não iniciado",
         ),
     },
 )
@@ -77,12 +85,13 @@ class DeviceList(Resource):
         try:
             data = request.get_json()
             result = create_device(data)
-            if "error" in result:
-                device_ns.abort(HTTP_400_BAD_REQUEST, result["error"])
-            return result, HTTP_201_CREATED
         except Exception as e:
             logger.error(f"Erro ao criar dispositivo: {e}")
             device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if "error" in result:
+            device_ns.abort(HTTP_400_BAD_REQUEST, result["error"])
+        return result["data"], HTTP_201_CREATED
 
 
 @device_ns.route("/enabled")
@@ -108,14 +117,13 @@ class DeviceById(Resource):
         """Busca dispositivo por ID"""
         try:
             device = get_device_by_id(id)
-            if device:
-                return device, HTTP_200_OK
-            else:
-                logger.info(f"Dispositivo com ID {id} não encontrado.")
-                device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
         except Exception as e:
             logger.error(f"Erro ao buscar dispositivo por ID {id}: {e}")
             device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if not device:
+            device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
+        return device, HTTP_200_OK
 
     @device_ns.expect(device_model)
     @device_ns.marshal_with(device_model)
@@ -124,12 +132,13 @@ class DeviceById(Resource):
         try:
             data = request.get_json()
             result = update_device(id, data)
-            if "error" in result:
-                device_ns.abort(HTTP_400_BAD_REQUEST, result["error"])
-            return result, HTTP_200_OK
         except Exception as e:
             logger.error(f"Erro ao atualizar dispositivo {id}: {e}")
             device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if "error" in result:
+            device_ns.abort(HTTP_400_BAD_REQUEST, result["error"])
+        return [], HTTP_204_UPDATED
 
     def delete(self, id):
         """Deleta dispositivo por ID"""
@@ -148,13 +157,13 @@ class DeviceByIp(Resource):
         """Busca dispositivo por IP"""
         try:
             device = get_device_by_ip(ip_address)
-            if device:
-                return device, HTTP_200_OK
-            else:
-                device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
         except Exception as e:
             logger.error(f"Erro ao buscar dispositivo por IP {ip_address}: {e}")
             device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if not device:
+            device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
+        return device, HTTP_200_OK
 
 
 @device_ns.route("/hostname/<string:hostname>")
@@ -164,10 +173,10 @@ class DeviceByHostname(Resource):
         """Busca dispositivo por hostname"""
         try:
             device = get_device_by_hostname(hostname)
-            if device:
-                return device, HTTP_200_OK
-            else:
-                device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
         except Exception as e:
             logger.error(f"Erro ao buscar dispositivo por HOSTNAME {hostname}: {e}")
             device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if not device:
+            device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
+        return device, HTTP_200_OK
