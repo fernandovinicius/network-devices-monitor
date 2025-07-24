@@ -20,7 +20,7 @@ def validate_site(site):
 
 
 def validate_type(type):
-    return re.match(r"^^[A-Z0-9_.-]{1,30}$", type)
+    return re.match(r"^[A-Z0-9_.-]{1,30}$", type)
 
 
 def validate_interval(value):
@@ -36,21 +36,31 @@ def validate_ping_count(value):
 
 
 def validate_device_data(data):
-    errors = []
+    errors = {}
 
     if not validate_ip(data.get("ip_address", "")):
-        errors.append("ip_address")
+        errors["ip_address"] = "Informe um IP no formato IPv4"
+
     if not validate_hostname(data.get("hostname", "")):
-        errors.append("hostname")
+        errors["hostname"] = "Apenas caracteres no conjunto [A-Z0-9_.-]. Max: 50"
+
     if not validate_site(data.get("site", "")):
-        errors.append("site")
+        errors["site"] = "Apenas caracteres no conjunto [A-Z0-9_.-]. Max: 20"
+
     if not validate_type(data.get("type", "")):
-        errors.append("type")
+        errors["type"] = "Apenas caracteres no conjunto [A-Z0-9_.-]. Max: 30"
+
     if not validate_interval(data.get("monitoring_interval_seconds", 0)):
-        errors.append("monitoring_interval_seconds")
+        errors["monitoring_interval_seconds"] = (
+            "Valores aceitos: [30, 60, 120, 180, 300]"
+        )
+
     if not validate_timeout(data.get("ping_timeout_milliseconds", 0)):
-        errors.append("ping_timeout_milliseconds")
+        errors["ping_timeout_milliseconds"] = (
+            "Valores aceitos: [100, 250, 500, 1000, 2000]"
+        )
+
     if not validate_ping_count(data.get("ping_count", 0)):
-        errors.append("ping_count")
+        errors["ping_count"] = "Valores aceitos: [1, 2, 3, 4]"
 
     return errors
