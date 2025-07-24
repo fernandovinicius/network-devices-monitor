@@ -30,12 +30,12 @@ class DeviceHistoryResource(Resource):
         """Retorna o histórico de status de um dispositivo pelo ID"""
         try:
             history = get_device_history(device_id)
-            if history:
-                return history, HTTP_200_OK
-            else:
-                history_ns.abort(
-                    HTTP_404_NOT_FOUND, "Histórico não encontrado para o dispositivo."
-                )
         except Exception as e:
             logger.error(f"Erro ao buscar histórico do dispositivo {device_id}: {e}")
             history_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        if not history:
+            history_ns.abort(
+                HTTP_404_NOT_FOUND, "Histórico não encontrado para o dispositivo."
+            )
+        return history, HTTP_200_OK
