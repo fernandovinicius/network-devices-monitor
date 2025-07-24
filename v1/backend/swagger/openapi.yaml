@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: Network Monitoring API
+  version: 1.0.0
+  description: API para gerenciamento de dispositivos de rede
+
+paths:
+  /devices:
+    get:
+      summary: Buscar todos os dispositivos
+      tags: [Dispositivos]
+      responses:
+        '200':
+          description: Lista de dispositivos
+        '500':
+          description: Erro interno
+
+  /enabled_devices:
+    get:
+      summary: Buscar todos os dispositivos com monitoramento habilitado
+      tags: [Dispositivos]
+      responses:
+        '200':
+          description: Lista de dispositivos ativos
+        '500':
+          description: Erro interno
+
+  /device/{id}:
+    get:
+      summary: Buscar dispositivo pelo ID
+      tags: [Dispositivos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do dispositivo
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dispositivo encontrado
+        '404':
+          description: Dispositivo não encontrado
+        '500':
+          description: Erro interno
+
+    put:
+      summary: Atualizar dispositivo por ID
+      tags: [Dispositivos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do dispositivo
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200':
+          description: Dispositivo atualizado
+        '400':
+          description: Dados inválidos
+        '500':
+          description: Erro interno
+
+    delete:
+      summary: Remover dispositivo por ID
+      tags: [Dispositivos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do dispositivo
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dispositivo removido
+        '500':
+          description: Erro interno
+
+  /device/ip/{ip_address}:
+    get:
+      summary: Buscar dispositivo pelo IP
+      tags: [Dispositivos]
+      parameters:
+        - name: ip_address
+          in: path
+          required: true
+          description: Endereço IP no formato IPv4
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dispositivo encontrado
+        '404':
+          description: Dispositivo não encontrado
+        '500':
+          description: Erro interno
+
+  /device/hostname/{hostname}:
+    get:
+      summary: Buscar dispositivo pelo hostname
+      tags: [Dispositivos]
+      parameters:
+        - name: hostname
+          in: path
+          required: true
+          description: Nome do host do dispositivo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dispositivo encontrado
+        '404':
+          description: Dispositivo não encontrado
+        '500':
+          description: Erro interno
+
+  /device:
+    post:
+      summary: Criar novo dispositivo
+      tags: [Dispositivos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '201':
+          description: Dispositivo criado
+        '400':
+          description: Dados inválidos
+        '500':
+          description: Erro interno
+
+components:
+  schemas:
+    Device:
+      type: object
+      required:
+        - ip_address
+        - hostname
+        - site
+        - type
+        - monitoring_interval_seconds
+        - ping_timeout_milliseconds
+        - ping_count
+      properties:
+        ip_address:
+          type: string
+          example: "192.168.0.1"
+        hostname:
+          type: string
+          example: "SERVER_01"
+        site:
+          type: string
+          example: "DF_CENTRAL"
+        type:
+          type: string
+          example: "FIREWALL"
+        monitoring_interval_seconds:
+          type: integer
+          example: 60
+        ping_timeout_milliseconds:
+          type: integer
+          example: 1000
+        ping_count:
+          type: integer
+          example: 3
+        monitoring_enabled:
+          type: boolean
+          example: true
+        current_status:
+          type: integer
+          example: 99
