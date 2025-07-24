@@ -1,3 +1,4 @@
+import json
 from db.connection import get_connection
 from utils.validation import validate_device_data
 from loguru import logger
@@ -53,10 +54,10 @@ def get_device_by_ip(ip_address):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM DEVICES WHERE IP_ADDRESS=?", (ip_address,))
-        row = cursor.fetchone()
+        rows = cursor.fetchall()
         conn.close()
-        device = Device(*row) if row else None
-        return device
+        devices = [Device(*row) for row in rows]
+        return devices
     except Exception as e:
         logger.error(f"Erro ao buscar dispositivo por IP {ip_address}: {e}")
         return None
@@ -67,10 +68,10 @@ def get_device_by_hostname(hostname):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM DEVICES WHERE HOSTNAME=?", (hostname,))
-        row = cursor.fetchone()
+        rows = cursor.fetchall()
         conn.close()
-        device = Device(*row) if row else None
-        return device
+        devices = [Device(*row) for row in rows]
+        return devices
     except Exception as e:
         logger.error(f"Erro ao buscar dispositivo por HOSTNAME {hostname}: {e}")
         return None
@@ -78,52 +79,44 @@ def get_device_by_hostname(hostname):
 
 def create_device(data):
     try:
-        erros = validate_device_data(data)
-        if erros:
-            campos = ", ".join(erros)
-            logger.warning(f"Falha na validação dos campos: {campos}")
-            return {"error": f"Dados inválidos nos seguintes campos: {campos}"}
+        # Garanta que os seguintes campos existam
+        if "monitoring_enabled" not in data:
+            data["monitoring_enabled"] = True
+        if "current_status" not in data:
+            data["current_status"] = DeviceStatus.NOT_STARTED.value
+        if "last_status_change" not in data:
+            data["last_status_change"] = datetime.now().isoformat()
 
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            INSERT INTO DEVICES (
-                IP_ADDRESS, HOSTNAME, SITE, TYPE,
-                MONITORING_INTERVAL_SECONDS, PING_TIMEOUT_MILLISECONDS, PING_COUNT,
-                MONITORING_ENABLED, CURRENT_STATUS, LAST_STATUS_CHANGE
+        # Validação dos campos
+        validation_error = validate_device_data(data)
+        if validation_error:
+            logger.error(
+                f"Falha na validação dos campos:\n{json.dumps(validation_error, indent=4)}"
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                data["ip_address"],
-                data["hostname"],
-                data["site"],
-                data["type"],
-                data["monitoring_interval_seconds"],
-                data["ping_timeout_milliseconds"],
-                data["ping_count"],
-                data.get("monitoring_enabled", True),
-                data.get("current_status", DeviceStatus.NOT_STARTED.value),
-                data.get("last_status_change", datetime.now().isoformat()),
-            ),
-        )
-        conn.commit()
-        conn.close()
-        logger.info(f"Dispositivo criado: {data['hostname']} ({data['ip_address']})")
-        return {"message": "Dispositivo criado com sucesso."}
+            return {"error": validation_error}
+
+        device = insert_device_db(device=data)
+        logger.info(f"Dispositivo criado: {device})")
+        return {"message": "Dispositivo criado com sucesso", "data": device}
+
     except Exception as e:
         logger.error(f"Erro ao criar dispositivo: {e}")
-        return {"error": "Erro interno."}
+        return {"error": "Erro interno"}
 
 
 def update_device(id, data):
     try:
-        erros = validate_device_data(data)
-        if erros:
-            campos = ", ".join(erros)
-            logger.warning(f"Falha na validação dos campos: {campos}")
-            return {"error": f"Dados inválidos nos seguintes campos: {campos}"}
+        # Garanta que os seguintes campos existam
+        if "monitoring_enabled" not in data:
+            data["monitoring_enabled"] = True
+
+        # Validação dos campos
+        validation_error = validate_device_data(data)
+        if validation_error:
+            logger.error(
+                f"Falha na validação dos campos:\n{json.dumps(validation_error, indent=4)}"
+            )
+            return {"error": validation_error}
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -143,7 +136,7 @@ def update_device(id, data):
                 data["monitoring_interval_seconds"],
                 data["ping_timeout_milliseconds"],
                 data["ping_count"],
-                data.get("monitoring_enabled", True),
+                data["monitoring_enabled"],
                 id,
             ),
         )
@@ -151,6 +144,7 @@ def update_device(id, data):
         conn.close()
         logger.info(f"Dispositivo atualizado: ID={id}")
         return {"message": "Dispositivo atualizado com sucesso."}
+
     except Exception as e:
         logger.error(f"Erro ao atualizar dispositivo {id}: {e}")
         return {"error": "Erro interno."}
@@ -168,3 +162,61 @@ def delete_device(id):
     except Exception as e:
         logger.error(f"Erro ao remover dispositivo {id}: {e}")
         return {"error": "Erro interno."}
+
+
+def insert_device_db(device):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Insere dispositivo na tabela DEVICES
+    cursor.execute(
+        """
+        INSERT INTO DEVICES (
+            IP_ADDRESS, HOSTNAME, SITE, TYPE,
+            MONITORING_INTERVAL_SECONDS, PING_TIMEOUT_MILLISECONDS, PING_COUNT,
+            MONITORING_ENABLED, CURRENT_STATUS, LAST_STATUS_CHANGE
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            device["ip_address"],
+            device["hostname"],
+            device["site"],
+            device["type"],
+            device["monitoring_interval_seconds"],
+            device["ping_timeout_milliseconds"],
+            device["ping_count"],
+            device["monitoring_enabled"],
+            device["current_status"],
+            device["last_status_change"],
+        ),
+    )
+    device["id"] = cursor.lastrowid
+
+    # Cria entrada na tabela DEVICES_HISTORY_DATA
+    cursor.execute(
+        """
+        INSERT INTO DEVICES_STATUS_HISTORY (
+            DEVICE_ID, STATUS, LAST_STATUS_CHANGE, COUNT
+        ) VALUES (?, ?, ?, ?)
+        """,
+        (
+            device["id"],
+            device["current_status"],
+            device["last_status_change"],
+            1,
+        ),
+    )
+    device["current_history_id"] = cursor.lastrowid
+
+    # Atualiza o campo CURRENT_HISTORY_ID
+    cursor.execute(
+        """
+        UPDATE DEVICES SET CURRENT_HISTORY_ID = ? WHERE ID = ?
+        """,
+        (device["current_history_id"], device["id"]),
+    )
+    conn.commit()
+    conn.close()
+
+    return device
