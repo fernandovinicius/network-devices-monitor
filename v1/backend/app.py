@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restx import Api
 from config import setup_logger
 from controllers.data_controller import data_ns
@@ -9,6 +10,8 @@ from controllers.history_controller import history_ns
 setup_logger()
 
 app = Flask(__name__)
+CORS(app) # Permite todas as origens
+
 api = Api(
     app,
     title="Network Devices Monitor API",
