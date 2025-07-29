@@ -31,8 +31,23 @@ def get_enabled_devices():
         devices = [Device(*row) for row in rows]
         return devices
     except Exception as e:
-        logger.error(f"Erro ao buscar todos os dispositivos: {e}")
+        logger.error(f"Erro ao buscar todos os dispositivos habilitados: {e}")
         return []
+
+
+def get_devices_by_status(status):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM DEVICES WHERE CURRENT_STATUS=?", (status,))
+        rows = cursor.fetchall()
+        conn.close()
+        devices = [Device(*row) for row in rows]
+        return devices
+    except Exception as e:
+        logger.error(f"Erro ao buscar todos os dispositivos com status {DeviceStatus[status]}: {e}")
+        return []
+
 
 
 def get_device_by_id(id):
@@ -106,9 +121,17 @@ def create_device(data):
 
 def update_device(id, data):
     try:
-        # Garanta que os seguintes campos existam
+        # Toda atualização altera o status para NOT_STARTED
+        # Menos quando MONITORING_ENABLED é setado como falso,
+        # o status vai para PAUSED
+
+        data["current_status"] = DeviceStatus.NOT_STARTED.value
         if "monitoring_enabled" not in data:
             data["monitoring_enabled"] = True
+        else:
+            if bool(data["monitoring_enabled"]) == False:
+                data["current_status"] = DeviceStatus.PAUSED.value
+        data["last_status_change"] = datetime.now().isoformat()
 
         # Validação dos campos
         validation_error = validate_device_data(data)
@@ -117,15 +140,33 @@ def update_device(id, data):
                 f"Falha na validação dos campos:\n{json.dumps(validation_error, indent=4)}"
             )
             return {"error": validation_error}
+        
 
         conn = get_connection()
         cursor = conn.cursor()
+
+        # Cria entrada na tabela DEVICES_HISTORY_DATA
+        cursor.execute(
+            """
+            INSERT INTO DEVICES_STATUS_HISTORY (
+                DEVICE_ID, STATUS, LAST_STATUS_CHANGE, COUNT
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (
+                id,
+                data["current_status"],
+                data["last_status_change"],
+                1,
+            ),
+        )
+        data["current_history_id"] = cursor.lastrowid
+        
         cursor.execute(
             """
             UPDATE DEVICES SET
                 IP_ADDRESS=?, HOSTNAME=?, SITE=?, TYPE=?,
                 MONITORING_INTERVAL_SECONDS=?, PING_TIMEOUT_MILLISECONDS=?, PING_COUNT=?,
-                MONITORING_ENABLED=?
+                MONITORING_ENABLED=?, CURRENT_STATUS=?, LAST_STATUS_CHANGE=?, CURRENT_HISTORY_ID=?
             WHERE ID=?
             """,
             (
@@ -137,9 +178,13 @@ def update_device(id, data):
                 data["ping_timeout_milliseconds"],
                 data["ping_count"],
                 data["monitoring_enabled"],
+                data["current_status"],
+                data["last_status_change"],
+                data["current_history_id"],
                 id,
             ),
         )
+
         conn.commit()
         conn.close()
         logger.info(f"Dispositivo atualizado: ID={id}")
