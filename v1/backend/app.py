@@ -10,7 +10,7 @@ from controllers.history_controller import history_ns
 setup_logger()
 
 app = Flask(__name__)
-CORS(app) # Permite todas as origens
+CORS(app)  # Permite todas as origens
 
 api = Api(
     app,
