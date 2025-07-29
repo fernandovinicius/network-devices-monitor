@@ -10,7 +10,7 @@ class Device:
         site,
         type,
         monitoring_interval_seconds=60,
-        ping_timeout_ms=1000,
+        ping_timeout_milliseconds=1000,
         ping_count=4,
         monitoring_enabled=True,
         current_status=DeviceStatus.NOT_STARTED.value,
@@ -23,7 +23,7 @@ class Device:
         self.site = site
         self.type = type
         self.monitoring_interval_seconds = monitoring_interval_seconds
-        self.ping_timeout_ms = ping_timeout_ms
+        self.ping_timeout_milliseconds = ping_timeout_milliseconds
         self.ping_count = ping_count
         self.monitoring_enabled = monitoring_enabled
         self.current_status = current_status
@@ -38,7 +38,7 @@ class Device:
             "site": self.site,
             "type": self.type,
             "monitoring_interval_seconds": self.monitoring_interval_seconds,
-            "ping_timeout_ms": self.ping_timeout_ms,
+            "ping_timeout_milliseconds": self.ping_timeout_milliseconds,
             "ping_count": self.ping_count,
             "monitoring_enabled": self.monitoring_enabled,
             "current_status": self.current_status,
