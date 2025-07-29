@@ -6,8 +6,9 @@ from services.device_service import (
     get_device_by_id,
     get_device_by_ip,
     get_device_by_hostname,
-    create_device,
+    get_devices_by_status,
     get_enabled_devices,
+    create_device,
     update_device,
     delete_device,
 )
@@ -36,7 +37,7 @@ device_model = device_ns.model(
         "monitoring_interval_seconds": fields.Integer(
             description="Intervalo de monitoramento (segundos)"
         ),
-        "ping_timeout_ms": fields.Integer(description="Timeout do ping (ms)"),
+        "ping_timeout_milliseconds": fields.Integer(description="Timeout do ping (ms)"),
         "ping_count": fields.Integer(description="Quantidade de pings"),
         "monitoring_enabled": fields.Boolean(description="Monitoramento habilitado"),
         "current_status": fields.String(description="Status atual"),
@@ -55,6 +56,9 @@ device_status_enum = device_ns.model(
         ),
         "DOWN": fields.Integer(
             example=DeviceStatus.DOWN.value, description="Dispositivo está offline"
+        ),
+        "PAUSED": fields.Integer(
+            example=DeviceStatus.PAUSED.value, description="Monitoração desabilitada"
         ),
         "NOT_STARTED": fields.Integer(
             example=DeviceStatus.NOT_STARTED.value,
@@ -180,3 +184,17 @@ class DeviceByHostname(Resource):
         if not device:
             device_ns.abort(HTTP_404_NOT_FOUND, "Dispositivo não encontrado.")
         return device, HTTP_200_OK
+
+
+@device_ns.route("/status/<int:status>")
+class DevicesByHostname(Resource):
+    @device_ns.marshal_with(device_model)
+    def get(self, status):
+        """Busca dispositivos pelo Status"""
+        try:
+            devices = get_devices_by_status(status)
+        except Exception as e:
+            logger.error(f"Erro ao buscar dispositivos com Status={status}: {e}")
+            device_ns.abort(HTTP_500_INTERNAL_ERROR, "Erro interno.")
+
+        return devices, HTTP_200_OK
