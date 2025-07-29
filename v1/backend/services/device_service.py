@@ -45,9 +45,10 @@ def get_devices_by_status(status):
         devices = [Device(*row) for row in rows]
         return devices
     except Exception as e:
-        logger.error(f"Erro ao buscar todos os dispositivos com status {DeviceStatus[status]}: {e}")
+        logger.error(
+            f"Erro ao buscar todos os dispositivos com status {DeviceStatus[status]}: {e}"
+        )
         return []
-
 
 
 def get_device_by_id(id):
@@ -140,7 +141,6 @@ def update_device(id, data):
                 f"Falha na validação dos campos:\n{json.dumps(validation_error, indent=4)}"
             )
             return {"error": validation_error}
-        
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -160,7 +160,7 @@ def update_device(id, data):
             ),
         )
         data["current_history_id"] = cursor.lastrowid
-        
+
         cursor.execute(
             """
             UPDATE DEVICES SET
