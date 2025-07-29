@@ -1,9 +1,7 @@
 from loguru import logger
 
 
-DATABASE_URL = (
-    "C:/Desenvolvimento/network-devices-monitor/v0/backend/database/network_monitor.db"
-)
+DATABASE_URL = "../database/network_monitor.db"
 
 
 def setup_logger():
