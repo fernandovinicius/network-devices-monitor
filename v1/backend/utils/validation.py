@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 
 
@@ -33,6 +34,14 @@ def validate_timeout(value):
 
 def validate_ping_count(value):
     return 1 <= value <= 10
+
+
+def validate_datetime(dt_str):
+    try:
+        datetime.fromisoformat(dt_str)
+    except:
+        return False
+    return True
 
 
 def validate_device_data(data):
