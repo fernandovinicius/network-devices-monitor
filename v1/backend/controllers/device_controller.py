@@ -20,52 +20,16 @@ from utils.http_status import (
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_ERROR,
 )
-from models.device_status import DeviceStatus
-from models.device_model import Device
+from models.device_status import DeviceStatus, DEVICE_STATUS_DESC
+from models.device_model import DEVICE_CREATION_DESC, DEVICE_DESC
 
 
 device_ns = Namespace("devices", description="Operações de dispositivos de rede")
 
-device_model = device_ns.model(
-    "Device",
-    {
-        "id": fields.Integer(description="ID do dispositivo"),
-        "ip_address": fields.String(required=True, description="Endereço IP"),
-        "hostname": fields.String(required=True, description="Hostname"),
-        "site": fields.String(required=True, description="Site"),
-        "type": fields.String(required=True, description="Tipo"),
-        "monitoring_interval_seconds": fields.Integer(
-            description="Intervalo de monitoramento (segundos)"
-        ),
-        "ping_timeout_milliseconds": fields.Integer(description="Timeout do ping (ms)"),
-        "ping_count": fields.Integer(description="Quantidade de pings"),
-        "monitoring_enabled": fields.Boolean(description="Monitoramento habilitado"),
-        "current_status": fields.String(description="Status atual"),
-        "last_status_change": fields.String(description="Última alteração de status"),
-        "current_history_id": fields.Integer(
-            description="ID do histórico atual do dispositivo"
-        ),
-    },
-)
-
-device_status_enum = device_ns.model(
-    "DeviceStatus",
-    {
-        "UP": fields.Integer(
-            example=DeviceStatus.UP.value, description="Dispositivo está online"
-        ),
-        "DOWN": fields.Integer(
-            example=DeviceStatus.DOWN.value, description="Dispositivo está offline"
-        ),
-        "PAUSED": fields.Integer(
-            example=DeviceStatus.PAUSED.value, description="Monitoração desabilitada"
-        ),
-        "NOT_STARTED": fields.Integer(
-            example=DeviceStatus.NOT_STARTED.value,
-            description="Monitoramento não iniciado",
-        ),
-    },
-)
+# Descrições das Classes
+device_model = device_ns.model("Device", DEVICE_DESC)
+device_creation_model = device_ns.model("DeviceCreate", DEVICE_CREATION_DESC)
+device_status_enum = device_ns.model("DeviceStatus", DEVICE_STATUS_DESC)
 
 
 @device_ns.route("/")
@@ -82,7 +46,7 @@ class DeviceList(Resource):
                 HTTP_500_INTERNAL_ERROR, "Erro interno ao buscar dispositivos."
             )
 
-    @device_ns.expect(device_model)
+    @device_ns.expect(device_creation_model)
     @device_ns.marshal_with(device_model, code=HTTP_201_CREATED)
     def post(self):
         """Cria um novo dispositivo"""
@@ -187,10 +151,13 @@ class DeviceByHostname(Resource):
 
 
 @device_ns.route("/status/<int:status>")
-class DevicesByHostname(Resource):
+@device_ns.param(
+    "status", ", ".join(f"{member.value}: {member.name}" for member in DeviceStatus)
+)
+class DevicesByStatus(Resource):
     @device_ns.marshal_with(device_model)
     def get(self, status):
-        """Busca dispositivos pelo Status"""
+        """Busca dispositivos pelo status atual"""
         try:
             devices = get_devices_by_status(status)
         except Exception as e:
